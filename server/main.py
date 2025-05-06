@@ -35,13 +35,45 @@ import sys
 import websockets
 from locationsharinglib import Service
 from locationsharinglib.locationsharinglibexceptions import InvalidCookies
+import asyncpg
+from datetime import datetime, timezone
 
 COOKIES_FILE = os.environ.get("COOKIES_FILE", "cookies.txt")
 GOOGLE_EMAIL = os.environ.get("GOOGLE_EMAIL", "dimonaco.james@gmail.com")
 PORT = int(os.environ.get("PORT", 8765))
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:password@localhost:5432/location_tracker")
+
+async def init_db():
+    conn = await asyncpg.connect(DATABASE_URL)
+    # Create the locations table as a hypertable
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS locations (
+            time TIMESTAMPTZ NOT NULL,
+            lat DOUBLE PRECISION NOT NULL,
+            lng DOUBLE PRECISION NOT NULL
+        );
+    ''')
+    
+    # Convert to hypertable if not already
+    await conn.execute('''
+        SELECT create_hypertable('locations', 'time', if_not_exists => TRUE);
+    ''')
+    
+    await conn.close()
+
+async def store_location(lat: float, lng: float):
+    conn = await asyncpg.connect(DATABASE_URL)
+    await conn.execute(
+        'INSERT INTO locations (time, lat, lng) VALUES ($1, $2, $3)',
+        datetime.now(timezone.utc), lat, lng
+    )
+    await conn.close()
 
 async def location_sender(websocket):
     try:
+        # Initialize database
+        await init_db()
+        
         # Print debug info
         print(f"Using cookies file: {COOKIES_FILE}")
         print(f"File exists: {os.path.exists(COOKIES_FILE)}")
@@ -61,11 +93,14 @@ async def location_sender(websocket):
                 for person in people:
                     if person.nickname == GOOGLE_EMAIL or person.full_name == "You":
                         found = True
-                        await websocket.send(json.dumps({
+                        location_data = {
                             "lat": person.latitude,
                             "lng": person.longitude
-                        }))
-                        print(f"Sent location: {person.latitude}, {person.longitude}")
+                        }
+                        # Store location in TimescaleDB
+                        await store_location(person.latitude, person.longitude)
+                        await websocket.send(json.dumps(location_data))
+                        print(f"Sent and stored location: {person.latitude}, {person.longitude}")
                 
                 if not found:
                     print(f"Warning: Could not find person with nickname {GOOGLE_EMAIL}")

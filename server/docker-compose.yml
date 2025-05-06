@@ -6,6 +6,23 @@ services:
       - ./cookies.txt:/cookies.txt
     environment:
       - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:password@timescaledb:5432/location_tracker
     ports:
       - "8765:8765"
+    depends_on:
+      - timescaledb
     restart: unless-stopped
+
+  timescaledb:
+    image: timescale/timescaledb-ha:pg17
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=location_tracker
+    volumes:
+      - timescaledb_data:/home/postgres/pgdata/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  timescaledb_data:
