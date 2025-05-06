@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  location-server:
+    build: .
+    volumes:
+      - ./cookies.txt:/cookies.txt
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8765:8765"
+    restart: unless-stopped
