@@ -1,33 +1,3 @@
-# import asyncio
-# import json
-# import os
-# import websockets
-# from locationsharinglib import Service
-
-# COOKIES_FILE = os.environ.get("COOKIES_FILE", "cookies.txt")
-# GOOGLE_EMAIL = os.environ.get("GOOGLE_EMAIL", "dimonaco.james@gmail.com")
-# PORT = int(os.environ.get("PORT", 8765))
-
-# async def location_sender(websocket):
-#     service = Service(cookies_file=COOKIES_FILE, authenticating_account=GOOGLE_EMAIL)
-#     while True:
-#         for person in service.get_all_people():
-#             if person.nickname == "dimonaco.james@gmail.com":
-#                 await websocket.send(json.dumps({
-#                     "lat": person.latitude,
-#                     "lng": person.longitude
-#                 }))
-#         await asyncio.sleep(5)
-
-# async def main():
-#     async with websockets.serve(location_sender, "0.0.0.0", PORT):
-#         print(f"WebSocket server started on ws://0.0.0.0:{PORT}")
-#         await asyncio.Future()  # run forever
-
-# if __name__ == "__main__":
-#     asyncio.run(main()) 
-
-
 import asyncio
 import json
 import os
@@ -39,7 +9,7 @@ import asyncpg
 from datetime import datetime, timezone
 
 COOKIES_FILE = os.environ.get("COOKIES_FILE", "cookies.txt")
-GOOGLE_EMAIL = os.environ.get("GOOGLE_EMAIL", "dimonaco.james@gmail.com")
+GOOGLE_EMAIL = os.environ.get("GOOGLE_EMAIL", "carten100james@gmail.com")
 PORT = int(os.environ.get("PORT", 8765))
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:password@localhost:5432/location_tracker")
 
@@ -104,6 +74,9 @@ async def location_sender(websocket):
                 
                 if not found:
                     print(f"Warning: Could not find person with nickname {GOOGLE_EMAIL}")
+                    print("People found:")
+                    for p in people:
+                        print(f"  - Nickname: {p.nickname}, Full name: {p.full_name}, Location: {p.latitude}, {p.longitude}")
                     await websocket.send(json.dumps({
                         "error": f"Could not find location for {GOOGLE_EMAIL}"
                     }))

@@ -5,13 +5,14 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { toast } from "sonner";
 
 // Define stop locations
-// const stops = [
-//   { position: { lat: 40.7128, lng: -74.006 }, title: "New York City" },
-//   { position: { lat: 34.0522, lng: -118.2437 }, title: "Los Angeles" },
-//   { position: { lat: 41.8781, lng: -87.6298 }, title: "Chicago" },
-//   { position: { lat: 29.7604, lng: -95.3698 }, title: "Houston" },
-//   { position: { lat: 39.9526, lng: -75.1652 }, title: "Philadelphia" },
-// ]
+const stops = [
+  { position: { lat: 51.4864781, lng: -3.1815842 }, title: "Start" },
+  { position: { lat: 51.6172894, lng: -3.8115266 }, title: "Stop 1 34 Miles" },
+  { position: { lat: 51.6793523, lng: -4.2484649 }, title: "Stop 2 62 Miles " },
+  { position: { lat: 51.8479614, lng: -4.328969 }, title: "Stop 3 77 Miles" },
+  { position: { lat: 51.7823521, lng: -4.6384197 }, title: "Stop 4 97 Miles" },
+  { position: { lat: 51.6717685, lng: -4.6991583 }, title: "Finish " },
+];
 
 export function LocationMap() {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -86,14 +87,14 @@ export function LocationMap() {
         setMainMarker(marker);
 
         // Add stop markers
-        // stops.forEach((stop) => {
-        //   new AdvancedMarkerElement({
-        //     map: mapInstance,
-        //     position: stop.position,
-        //     title: stop.title,
-        //     content: createMarkerElement(stop.title, "red"),
-        //   })
-        // })
+        stops.forEach((stop) => {
+          new AdvancedMarkerElement({
+            map: mapInstance,
+            position: stop.position,
+            title: stop.title,
+            content: createMarkerElement(stop.title, "red"),
+          });
+        });
 
         setIsLoaded(true);
       } catch (error) {
