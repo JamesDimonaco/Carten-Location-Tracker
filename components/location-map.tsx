@@ -23,6 +23,7 @@ export function LocationMap() {
     lat: 51.5074,
     lng: -0.1278,
   });
+  const [currentTime, setCurrentTime] = useState<string>("");
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Initialize Google Maps
@@ -170,15 +171,14 @@ export function LocationMap() {
 
   // Connect to WebSocket for location updates
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8765");
+    const ws = new WebSocket("ws://localhost:8000");
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (typeof data.lat === "number" && typeof data.lng === "number") {
-          console.log("Location updated:", data);
-          setLocation({ lat: data.lat, lng: data.lng });
-        }
+        console.log(data);
+        setCurrentTime(data.time);
+        setLocation({ lat: parseFloat(data.lat), lng: parseFloat(data.lng) });
       } catch (err) {
         console.error("Failed to parse location data:", err);
       }
@@ -206,6 +206,15 @@ export function LocationMap() {
   return (
     <div className="w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
+      <div className="absolute top-16 md:top-12 right-0 p-4">
+        <p className="text-sm text-gray-500">
+          {new Date(currentTime).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })}
+        </p>
+      </div>
     </div>
   );
 }
