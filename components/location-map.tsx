@@ -198,15 +198,21 @@ export function LocationMap() {
   useEffect(() => {
     if (map && mainMarker && isLoaded) {
       const newPosition = { lat: location.lat, lng: location.lng };
-      map.panTo(newPosition);
       mainMarker.position = newPosition;
     }
   }, [map, mainMarker, location, isLoaded]);
 
+  const handleRecenter = () => {
+    if (map) {
+      map.panTo(location);
+      map.setZoom(15);
+    }
+  };
+
   return (
     <div className="w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
-      <div className="absolute top-16 md:top-12 right-0 p-4">
+      <div className="absolute top-16 md:top-12 right-0 p-4 flex flex-col gap-2">
         <p className="text-sm text-gray-500">
           {new Date(currentTime).toLocaleTimeString("en-US", {
             hour: "2-digit",
@@ -214,6 +220,14 @@ export function LocationMap() {
             second: "2-digit",
           })}
         </p>
+      </div>
+      <div className="absolute top-40 md:top-32 right-1/2 p-4 flex flex-col gap-2">
+        <button
+          onClick={handleRecenter}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition-colors"
+        >
+          Recenter
+        </button>
       </div>
     </div>
   );
