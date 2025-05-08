@@ -177,6 +177,11 @@ export function LocationMap() {
     function connect() {
       ws = new WebSocket("wss://carten-api.dimonaco.co.uk");
 
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+        toast.success("Connection established");
+      };
+
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
