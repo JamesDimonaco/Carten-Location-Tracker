@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+// @ts-ignore
+import * as toGeoJSON from "@mapbox/togeojson";
+import { useRef, useEffect, useState } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
 import { toast } from "sonner";
 
@@ -245,6 +247,39 @@ export function LocationMap() {
       map.setZoom(15);
     }
   };
+
+  // Draw GPX route as polyline
+  useEffect(() => {
+    if (!map) return;
+
+    fetch("/carten-course.gpx")
+      .then((res) => res.text())
+      .then((gpxText) => {
+        const parser = new DOMParser();
+        const gpx = parser.parseFromString(gpxText, "application/xml");
+        const geojson = toGeoJSON.gpx(gpx);
+
+        if (
+          geojson.features &&
+          geojson.features.length > 0 &&
+          geojson.features[0].geometry.type === "LineString"
+        ) {
+          const coords = geojson.features[0].geometry.coordinates.map(
+            ([lng, lat]: [number, number]) => ({ lat, lng })
+          );
+
+          // @ts-ignore
+          new (window.google.maps.Polyline as any)({
+            path: coords,
+            geodesic: true,
+            strokeColor: "#1976D2",
+            strokeOpacity: 1.0,
+            strokeWeight: 4,
+            map: map,
+          });
+        }
+      });
+  }, [map]);
 
   return (
     <div className="w-full h-full">
