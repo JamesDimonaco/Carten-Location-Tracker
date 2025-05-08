@@ -151,19 +151,18 @@ export function LocationMap() {
     element.innerHTML = `
       <div style="
         background-color: #fff;
-        color: white;
         border-radius: 50%;
         width: 40px;
         height: 40px;
-        font-size: 24px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         display: flex;
         align-items: center;
         justify-content: center;
         transform: translate(-50%, -50%);
         position: relative;
+        overflow: hidden;
       ">
-        🚲
+        <img src="/james-cycle.jpg" alt="Cyclist" style="width: 100%; height: 100%; object-fit: cover;" />
       </div>
     `;
     return element;
