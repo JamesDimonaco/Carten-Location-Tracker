@@ -171,12 +171,12 @@ export function LocationMap() {
 
   // Connect to WebSocket for location updates
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8000");
+    const ws = new WebSocket("wss://carten-api.dimonaco.co.uk");
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log(data);
+
         setCurrentTime(data.time);
         setLocation({ lat: parseFloat(data.lat), lng: parseFloat(data.lng) });
       } catch (err) {
