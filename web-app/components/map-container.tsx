@@ -1,10 +1,9 @@
-"use client";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { LocationMap } from "@/components/location-map";
-import { ViewerCounter } from "@/components/viewer-counter";
+
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { JustGivingCampaign } from "./justgiving-campaign";
 
 export function MapContainer() {
   return (
@@ -12,7 +11,7 @@ export function MapContainer() {
       <div className="flex flex-row gap-4">
         <Card className="w-full">
           <CardContent className="p-4">
-            <ViewerCounter />
+            <JustGivingCampaign />
           </CardContent>
         </Card>
         <Link

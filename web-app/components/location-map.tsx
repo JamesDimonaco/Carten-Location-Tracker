@@ -16,6 +16,7 @@ const stops = [
 
 export function LocationMap() {
   const mapRef = useRef<HTMLDivElement>(null);
+  // @ts-ignore
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [mainMarker, setMainMarker] =
     useState<google.maps.marker.AdvancedMarkerElement | null>(null);
@@ -242,8 +243,8 @@ export function LocationMap() {
 
   return (
     <div className="w-full h-full">
-      <div ref={mapRef} className="w-full h-full" />
-      <div className="absolute top-16 md:top-12 right-0 p-4 flex flex-col gap-2">
+      <div ref={mapRef} className="w-full h-full " />
+      <div className="absolute top-48  right-0 p-4 flex flex-col gap-2">
         <p className="text-sm text-gray-500">
           {new Date(currentTime).toLocaleTimeString("en-US", {
             hour: "2-digit",
@@ -252,7 +253,7 @@ export function LocationMap() {
           })}
         </p>
       </div>
-      <div className="absolute top-40 md:top-32 right-1/2 p-4 flex flex-col gap-2">
+      <div className="absolute top-36 md:top-32 right-0 p-4 flex flex-col gap-2">
         <button
           onClick={handleRecenter}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-md transition-colors"
