@@ -1,11 +1,30 @@
 version: "3.8"
 services:
-  location-server:
+  deno-server:
     build: .
-    volumes:
-      - ./cookies.txt:/cookies.txt
     environment:
-      - PYTHONUNBUFFERED=1
+      - PGHOST=timescaledb
+      - PGDATABASE=location_tracker
+      - PGUSER=postgres
+      - PGPASSWORD=password
+      - PGPORT=5432
     ports:
-      - "8765:8765"
+      - "8000:8000"
+    depends_on:
+      - timescaledb
     restart: unless-stopped
+
+  timescaledb:
+    image: timescale/timescaledb-ha:pg17
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=location_tracker
+    volumes:
+      - timescaledb_data:/home/postgres/pgdata/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  timescaledb_data:
