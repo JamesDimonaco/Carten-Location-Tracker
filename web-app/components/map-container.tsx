@@ -7,7 +7,7 @@ import { JustGivingCampaign } from "./justgiving-campaign";
 
 export function MapContainer() {
   return (
-    <div className="flex flex-col w-full h-screen p-4 gap-4">
+    <div className="flex flex-col w-full h-[800px] p-2 gap-4">
       <div className="flex flex-row gap-4">
         <Card className="w-full">
           <CardContent className="p-4">
