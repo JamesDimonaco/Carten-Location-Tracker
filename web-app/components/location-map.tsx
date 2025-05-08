@@ -45,9 +45,7 @@ export function LocationMap() {
     async function initMap() {
       try {
         // Load the Maps JavaScript API
-        const { Map } = (await loader.importLibrary(
-          "maps"
-        )) as google.maps.MapsLibrary;
+        const { Map } = (await loader.importLibrary("maps")) as { Map: any };
         const { AdvancedMarkerElement } = (await loader.importLibrary(
           "marker"
         )) as google.maps.MarkerLibrary;
@@ -170,26 +168,60 @@ export function LocationMap() {
 
   // Connect to WebSocket for location updates
   useEffect(() => {
-    const ws = new WebSocket("wss://carten-api.dimonaco.co.uk");
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let reconnectAttempts = 0;
+    const maxReconnectDelay = 30000; // 30 seconds
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
+    function connect() {
+      ws = new WebSocket("wss://carten-api.dimonaco.co.uk");
 
-        setCurrentTime(data.time);
-        setLocation({ lat: parseFloat(data.lat), lng: parseFloat(data.lng) });
-      } catch (err) {
-        console.error("Failed to parse location data:", err);
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          setCurrentTime(data.time);
+          setLocation({ lat: parseFloat(data.lat), lng: parseFloat(data.lng) });
+        } catch (err) {
+          console.error("Failed to parse location data:", err);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log("WebSocket closed, attempting to reconnect...");
+        toast.error("Connection lost");
+        scheduleReconnect();
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        toast.error("Connection error");
+        scheduleReconnect();
+      };
+    }
+
+    function scheduleReconnect() {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
       }
-    };
+      const delay = Math.min(
+        1000 * Math.pow(2, reconnectAttempts),
+        maxReconnectDelay
+      );
+      reconnectTimeout = setTimeout(() => {
+        reconnectAttempts++;
+        connect();
+      }, delay);
+    }
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      toast.error("Failed to connect to location server");
-    };
+    connect();
 
     return () => {
-      ws.close();
+      if (ws) {
+        ws.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
     };
   }, []);
 
