@@ -248,7 +248,7 @@ export function LocationMap() {
 
   return (
     <div className="w-full h-full">
-      <div ref={mapRef} className="w-full h-full" />
+      <div ref={mapRef} id="map" className="w-full" style={{ height: 660 }} />
       <div className="absolute top-48  right-0 p-4 flex flex-col gap-2">
         <p className="text-sm text-gray-500">
           {new Date(currentTime).toLocaleTimeString("en-US", {
