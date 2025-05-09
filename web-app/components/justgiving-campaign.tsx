@@ -73,7 +73,10 @@ export async function JustGivingCampaign() {
   );
 
   return (
-    <div className="w-full max-w-xs mx-auto p-2 bg-card rounded-lg shadow space-y-3">
+    <div
+      className="w-full max-w-xs mx-auto  bg-card rounded-lg shadow space-y-4
+    "
+    >
       <div className="flex justify-between items-center text-sm">
         <span className="text-muted-foreground">Raised</span>
         <span className="font-bold">£{totalRaised.toLocaleString()}</span>

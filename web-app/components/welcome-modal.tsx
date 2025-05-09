@@ -68,7 +68,7 @@ export function WelcomeModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Welcome to Location Tracker!</DialogTitle>
+          <DialogTitle>Welcome to Carten Tracker!</DialogTitle>
           <DialogDescription>
             Tell us your name to personalize your experience. This is optional.
           </DialogDescription>

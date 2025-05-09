@@ -1,6 +1,9 @@
 "use client";
+import { genUploader } from "uploadthing/client";
+import { toast } from "sonner";
+
 import { useState, useEffect, useRef } from "react";
-import { Paperclip, Send } from "lucide-react";
+import { PaperclipIcon, Send, Loader2 } from "lucide-react";
 import { getUserName, submitComment } from "@/app/actions";
 import {
   Dialog,
@@ -15,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setUserName } from "@/app/actions";
 import { useFormStatus } from "react-dom";
+import Image from "next/image";
 
 interface Comment {
   id: number;
@@ -24,10 +28,10 @@ interface Comment {
   created_at: string;
 }
 
-function SubmitButton() {
+function SubmitButton({ imageReady }: { imageReady: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending || !imageReady}>
       <Send className="w-5 h-5" />
     </Button>
   );
@@ -37,8 +41,10 @@ export function CommentsSection() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [imageUrl, setImageUrl] = useState("");
   const [userName, setUserNameState] = useState<string | null>(null);
+  const [imageReady, setImageReady] = useState(true);
   const [showNameModal, setShowNameModal] = useState(false);
   const [tempName, setTempName] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -50,9 +56,7 @@ export function CommentsSection() {
   }, []);
 
   useEffect(() => {
-    const ws = new WebSocket(
-      process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/comments"
-    );
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/comments`);
 
     ws.onmessage = (event) => {
       const comment = JSON.parse(event.data);
@@ -74,6 +78,7 @@ export function CommentsSection() {
 
     formData.append("name", userName);
     formData.append("imageUrl", imageUrl);
+    console.log(formData);
 
     const result = await submitComment(formData);
     if (result?.success) {
@@ -100,15 +105,51 @@ export function CommentsSection() {
             placeholder="Write a comment..."
             className="flex-1"
           />
-          <Input
-            type="text"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="Image URL (optional)"
-            className="flex-1"
+          <PaperclipIcon
+            onClick={() => {
+              if (!imageReady) return;
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = "image/*";
+              input.onchange = (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) {
+                  genUploader()
+                    .createUpload("imageUploader", { files: [file] })
+                    .then((res) => {
+                      setImageReady(false);
+                      res.done().then((res) => {
+                        setImageUrl(res[0].ufsUrl);
+                        setImageReady(true);
+                        toast.success("Image uploaded");
+                        // Play sonar sound
+                        const audio = new Audio("/sonar.mp3");
+                        audio.play().catch(() => {});
+                      });
+                    });
+                }
+              };
+              input.click();
+            }}
+            className={`w-5 h-5 cursor-pointer my-auto transition-opacity ${
+              !imageReady ? "opacity-50" : "hover:opacity-80"
+            }`}
           />
-          <SubmitButton />
+          {!imageReady && <Loader2 className="w-5 h-5 animate-spin my-auto" />}
+          <SubmitButton imageReady={imageReady} />
         </div>
+        {imageUrl && (
+          <div className="relative mt-2 inline-block">
+            <Image
+              src={imageUrl}
+              alt="Uploaded image"
+              width={100}
+              height={100}
+              className="rounded"
+            />
+            <div className="absolute inset-0 animate-sonar rounded" />
+          </div>
+        )}
       </form>
 
       <div className="space-y-4">
@@ -124,10 +165,15 @@ export function CommentsSection() {
             </div>
             <p className="mb-2">{comment.content}</p>
             {comment.image_url && (
-              <img
+              <Image
                 src={comment.image_url}
                 alt="Comment attachment"
-                className="max-w-sm rounded"
+                className="max-w-sm rounded cursor-pointer hover:opacity-90 transition-opacity"
+                width={100}
+                height={100}
+                onClick={() =>
+                  comment.image_url && setSelectedImage(comment.image_url)
+                }
               />
             )}
           </div>
@@ -158,6 +204,23 @@ export function CommentsSection() {
           <DialogFooter>
             <Button onClick={handleNameSubmit}>Submit</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!selectedImage}
+        onOpenChange={() => setSelectedImage(null)}
+      >
+        <DialogContent className="max-w-4xl">
+          {selectedImage && (
+            <Image
+              src={selectedImage}
+              alt="Full size image"
+              className="w-full h-auto"
+              width={1200}
+              height={1200}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

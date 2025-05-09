@@ -177,7 +177,7 @@ export function LocationMap() {
     const maxReconnectDelay = 30000; // 30 seconds
 
     function connect() {
-      ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL!);
+      ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}`);
 
       ws.onopen = () => {
         console.log("WebSocket connected");
@@ -201,6 +201,8 @@ export function LocationMap() {
       };
 
       ws.onerror = (error) => {
+        console.log(error);
+
         console.error("WebSocket error:", error);
         toast.error("Connection error");
         scheduleReconnect();
@@ -286,11 +288,27 @@ export function LocationMap() {
       <div ref={mapRef} id="map" className="w-full" style={{ height: 660 }} />
       <div className="absolute top-48  right-0 p-4 flex flex-col gap-2">
         <p className="text-sm text-gray-500">
-          {new Date(currentTime).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          })}
+          Last updated:{" "}
+          {(() => {
+            const now = new Date();
+            const locationTime = new Date(currentTime);
+            const diffMs = now.getTime() - locationTime.getTime();
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffMins = Math.floor((diffMs % 3600000) / 60000);
+            const diffSecs = Math.floor((diffMs % 60000) / 1000);
+
+            if (diffHours > 0) {
+              return `${diffHours} hour${
+                diffHours !== 1 ? "s" : ""
+              } ${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
+            } else if (diffMins > 0) {
+              return `${diffMins} min${
+                diffMins !== 1 ? "s" : ""
+              } ${diffSecs} sec${diffSecs !== 1 ? "s" : ""} ago`;
+            } else {
+              return `${diffSecs} sec${diffSecs !== 1 ? "s" : ""} ago`;
+            }
+          })()}
         </p>
       </div>
       <div className="absolute top-36 md:top-32 right-0 p-4 flex flex-col gap-2">
