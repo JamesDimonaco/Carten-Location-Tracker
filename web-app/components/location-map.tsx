@@ -177,7 +177,7 @@ export function LocationMap() {
     const maxReconnectDelay = 30000; // 30 seconds
 
     function connect() {
-      ws = new WebSocket("wss://carten-api.dimonaco.co.uk");
+      ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL!);
 
       ws.onopen = () => {
         console.log("WebSocket connected");
